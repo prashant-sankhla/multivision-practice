@@ -1,7 +1,8 @@
 angular.module('app').controller('mvSignupCtrl', function($scope, mvUser) {
 
   function formIsValid() {
-    return $scope.signupForm.$valid;
+    console.log($scope.password);
+    return $scope.signupForm.$valid && $scope.password === $scope.confirmpassword
   }
 
   $scope.signup = function() {
@@ -12,6 +13,8 @@ angular.module('app').controller('mvSignupCtrl', function($scope, mvUser) {
         firstName: $scope.fname,
         lastName: $scope.lname
       });
+
+      newUser.$save();
       console.log(newUser);
     }
     console.log($scope.signupForm);

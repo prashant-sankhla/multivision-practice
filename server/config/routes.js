@@ -6,8 +6,15 @@ module.exports = function(app) {
 
   app.get('/api/users', auth.requiresRole('admin'), function(req, res) {
     User.find({}).exec(function(err, collection) {
+
       res.send(collection);
     })
+  });
+
+  app.post('/api/users', function(req, res) {
+    User.signupNewUser(req.body);
+//    res.status(200);
+    res.end();
   });
 
   app.get('/partials/*', function(req, res) {
