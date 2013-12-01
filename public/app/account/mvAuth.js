@@ -14,6 +14,22 @@ angular.module('app').factory('mvAuth', function($http, mvIdentity, $q, mvUser) 
       });
       return dfd.promise;
     },
+    signupUser: function(user) {
+      var dfd = $q.defer();
+
+      $http.post('/signupUser', user).then(function(response) {
+        if(!response.data.success) {
+          dfd.reject(response.data.reason);
+        } else {
+          var newUser = new mvUser();
+          angular.extend(newUser, response.data.user);
+          mvIdentity.currentUser = newUser;
+          dfd.resolve();
+        }
+      });
+
+      return dfd.promise;
+    },
     logoutUser: function() {
       var dfd = $q.defer();
       $http.post('/logout', {logout:true}).then(function() {

@@ -1,5 +1,4 @@
 var mongoose = require('mongoose'),
-  crypto = require('crypto'),
   User = require('./../models/User');
 
 module.exports = function(config) {
@@ -12,13 +11,4 @@ module.exports = function(config) {
 
   User.createDefaultUsers();
 
-}
-
-function createSalt() {
-  return crypto.randomBytes(128).toString('base64');
-}
-
-function hashPwd(salt, pwd) {
-  var hmac = crypto.createHmac('sha1', salt);
-  return hmac.update(pwd).digest('hex');
 }

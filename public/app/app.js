@@ -17,6 +17,7 @@ angular.module('app').config(function($routeProvider, $locationProvider) {
       controller: 'mvSignupCtrl'
     })
 
+
 });
 
 angular.module('app').run(function($rootScope, $location) {

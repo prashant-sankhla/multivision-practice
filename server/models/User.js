@@ -1,47 +1,41 @@
-var mongoose = require('mongoose');
-
-
+var mongoose = require('mongoose'),
+  crypto = require('crypto');
 
 var userSchema = mongoose.Schema({
-  firstName: String,
-  lastName: String,
-  username: String,
-  salt: String,
-  hashed_pwd: String,
+  firstName: {type:String, required:'{PATH} is required!'},
+  lastName: {type:String, required:'{PATH} is required!'},
+  username: {
+    type:String,
+    unique:true,
+    required:'{PATH} is required!'
+  },
+  salt: {type:String, required:'{PATH} is required!'},
+  hashed_pwd:{type:String, required:'{PATH} is required!'},
   roles: [String]
 });
 userSchema.methods = {
   authenticate: function(passwordToMatch) {
     return hashPwd(this.salt, passwordToMatch) === this.hashed_pwd;
   }
-}
+};
 
 userSchema.statics = {
-  signupNewUser: function(userData) {
-    if(isValid(userData)) {
-      User.create(userData);
-      console.log('user created');
-    } else {
-      console.log('user not created');
-    }
+  signupNewUser: function(userData, cb) {
+    userData.salt = createSalt();
+    userData.hashed_pwd = hashPwd(userData.salt, userData.password);
+    User.create(userData, function(err, user) {
+      if(err) {
+        if(err.toString().indexOf('E11000') > -1) {
+          err = new Error('Duplicate Username');
+        }
+        return cb(err);
+      }
+      cb(undefined, user);
+    });
   }
 };
 
 var User = mongoose.model('User', userSchema);
-
-
-
-function isValid(userData) {
-  return userData.firstName.length > 0 &&
-      userData.lastName.length > 0 &&
-      userData.username.length > 0 &&
-      isValidEmail(userData.email) &&
-      userData.password.length > 2
-}
-
-function isValidEmail(email) {
-  return true;
-}
 
 function createDefaultUsers() {
   User.find({}).exec(function(err, collection) {
@@ -59,6 +53,16 @@ function createDefaultUsers() {
     }
   });
 };
+
+
+function createSalt() {
+  return crypto.randomBytes(128).toString('base64');
+}
+
+function hashPwd(salt, pwd) {
+  var hmac = crypto.createHmac('sha1', salt);
+  return hmac.update(pwd).digest('hex');
+}
 
 exports.createDefaultUsers = createDefaultUsers;
 exports.User = User;

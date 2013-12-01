@@ -1,24 +1,19 @@
-angular.module('app').controller('mvSignupCtrl', function($scope, mvUser) {
+angular.module('app').controller('mvSignupCtrl', function($scope, mvUser, mvNotifier, mvAuth) {
 
-  function formIsValid() {
-    console.log($scope.password);
-    return $scope.signupForm.$valid && $scope.password === $scope.confirmpassword
-  }
 
   $scope.signup = function() {
-    if(formIsValid()) {
-      var newUser = new mvUser({
-        username: $scope.email,
-        password: $scope.password,
-        firstName: $scope.fname,
-        lastName: $scope.lname
-      });
+    var newUser = new mvUser({
+      username: $scope.email,
+      password: $scope.password,
+      firstName: $scope.fname,
+      lastName: $scope.lname
+    });
 
-      newUser.$save();
-      console.log(newUser);
-    }
-    console.log($scope.signupForm);
-
+    mvAuth.signupUser(newUser).then(function() {
+      mvNotifier.notify('User account created!');
+    }, function(reason) {
+      mvNotifier.error(reason);
+    });
   }
 
 });
