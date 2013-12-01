@@ -14,18 +14,29 @@ angular.module('app').factory('mvAuth', function($http, mvIdentity, $q, mvUser) 
       });
       return dfd.promise;
     },
-    signupUser: function(user) {
+
+    createUser: function(newUserData) {
+      var newUser = new mvUser(newUserData);
       var dfd = $q.defer();
 
-      $http.post('/signupUser', user).then(function(response) {
-        if(!response.data.success) {
-          dfd.reject(response.data.reason);
-        } else {
-          var newUser = new mvUser();
-          angular.extend(newUser, response.data.user);
+      newUser.$save().then(function() {
           mvIdentity.currentUser = newUser;
           dfd.resolve();
-        }
+      }, function(response) {
+        dfd.reject(response.data.reason);
+      });
+
+      return dfd.promise;
+    },
+
+    updateCurrentUser: function(newUserData) {
+      var dfd = $q.defer();
+
+      var clone = angular.copy(mvIdentity.currentUser);
+      angular.extend(clone, newUserData);
+      clone.$update().then(function() {
+        mvIdentity.currentUser = clone;
+        dfd.resolve();
       });
 
       return dfd.promise;
@@ -44,7 +55,13 @@ angular.module('app').factory('mvAuth', function($http, mvIdentity, $q, mvUser) 
       } else {
         return $q.reject('not authorized');
       }
-
+    },
+    authorizeAuthenticatedUserForRoute: function() {
+      if(mvIdentity.isAuthenticated()) {
+        return true;
+      } else {
+        return $q.reject('not authorized');
+      }
     }
   }
 });

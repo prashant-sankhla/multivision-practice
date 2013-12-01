@@ -10,13 +10,14 @@ module.exports = function(app) {
     })
   });
 
+  app.post('/api/users', auth.createUser);
+  app.put('/api/users', auth.updateUser);
+
   app.get('/partials/*', function(req, res) {
     res.render('../../public/app/' + req.params);
   });
 
   app.post('/login', auth.authenticate);
-
-  app.post('/signupUser', auth.signupUser);
 
   app.post('/logout', function(req, res) {
     req.logout();

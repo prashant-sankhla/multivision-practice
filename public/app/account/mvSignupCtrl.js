@@ -1,18 +1,19 @@
-angular.module('app').controller('mvSignupCtrl', function($scope, mvUser, mvNotifier, mvAuth) {
-
+angular.module('app').controller('mvSignupCtrl', function($scope, mvNotifier, mvAuth, $location) {
 
   $scope.signup = function() {
-    var newUser = new mvUser({
+    var newUserData = {
       username: $scope.email,
       password: $scope.password,
       firstName: $scope.fname,
       lastName: $scope.lname
-    });
+    };
 
-    mvAuth.signupUser(newUser).then(function() {
+    mvAuth.createUser(newUserData).then(function() {
       mvNotifier.notify('User account created!');
+      $location.path('/');
     }, function(reason) {
       mvNotifier.error(reason);
+      console.log(reason);
     });
   }
 

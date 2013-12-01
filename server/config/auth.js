@@ -1,5 +1,6 @@
 var passport = require('passport'),
-  User = require('mongoose').model('User');
+  User = require('mongoose').model('User'),
+  encrypt = require('../utilities/encryption');
 
 exports.authenticate = function(req, res, next) {
   var auth = passport.authenticate('local', function(err, user) {
@@ -13,14 +14,49 @@ exports.authenticate = function(req, res, next) {
   auth(req, res, next);
 };
 
-exports.signupUser = function(req, res, next) {
-  User.signupNewUser(req.body, function(err, user) {
-    if(err) { return res.send({success:false, reason:err.toString()}) }
+exports.createUser = function(req, res, next) {
+  var userData = req.body;
+  userData.salt = encrypt.createSalt();
+  userData.hashed_pwd = encrypt.hashPwd(userData.salt, userData.password);
+  User.create(userData, function(err, user) {
+    if(err) {
+      if(err.toString().indexOf('E11000') > -1) {
+        err = new Error('Duplicate Username');
+      }
+      res.status(400);
+      return res.send({reason:err.toString()})
+    }
     req.logIn(user, function(err) {
       if(err) {return next(err);}
-      res.send({success:true, user: user});
+      res.send(user);
     })
   });
+};
+
+exports.updateUser = function(req, res) {
+  var userUpdates = req.body;
+
+  console.log(req.user._id);
+  console.log(userUpdates._id);
+  console.log(req.user._id != userUpdates._id);
+  if(req.user._id != userUpdates._id && !req.user.hasRole('admin')) {
+    res.status(403);
+    return res.end();
+  }
+
+  // NEED TO LOOK UP USER IF NOT THE SAME ID AS CURRENT USER AND USER IS ADMIN
+
+  req.user.firstName = userUpdates.firstName;
+  req.user.lastName = userUpdates.lastName;
+  req.user.username = userUpdates.username;
+  if(userUpdates.password && userUpdates.password.length > 0) {
+    req.user.salt = encrypt.createSalt();
+    req.user.hashed_pwd = encrypt.hashPwd(req.user.salt, userUpdates.password);
+  }
+  req.user.save(function(err) {
+    if(err) { res.status(400); return res.send({reason:err.toString()});}
+    res.end();
+  })
 };
 
 exports.requiresApiLogin = function(req, res, next) {
@@ -42,3 +78,4 @@ exports.requiresRole = function(role) {
     }
   }
 }
+
