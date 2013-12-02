@@ -10,9 +10,6 @@ module.exports = function(app) {
     })
   });
 
-  app.post('/api/users', auth.createUser);
-  app.put('/api/users', auth.updateUser);
-
   app.get('/partials/*', function(req, res) {
     res.render('../../public/app/' + req.params);
   });
