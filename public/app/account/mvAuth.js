@@ -37,8 +37,9 @@ angular.module('app').factory('mvAuth', function($http, mvIdentity, $q, mvUser) 
       clone.$update().then(function() {
         mvIdentity.currentUser = clone;
         dfd.resolve();
+      }, function(response) {
+        dfd.reject(response.data.reason);
       });
-
       return dfd.promise;
     },
 
@@ -56,6 +57,7 @@ angular.module('app').factory('mvAuth', function($http, mvIdentity, $q, mvUser) 
       } else {
         return $q.reject('not authorized');
       }
+
     },
     authorizeAuthenticatedUserForRoute: function() {
       if(mvIdentity.isAuthenticated()) {
